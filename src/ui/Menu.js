@@ -95,18 +95,24 @@ export default class Menu {
   }
 
   async saveAndLoadScores(score, user) {
+    let shareLink = null
+
     if (user && user.token) {
       try {
-        await fetch('http://localhost:8000/api/scores/add', {
+        const res = await fetch('http://localhost:8000/api/scores/add', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/ld+json',
             'Authorization': `Bearer ${user.token}`
           },
-          body: JSON.stringify({ points: score, duration: 1 })
+          body: JSON.stringify({ points: score, duration: window.gameInstance?.scoreManager?.getDuration() || 1 })
         })
+        const data = await res.json()
+        if (data.shareToken) {
+          shareLink = `http://localhost:8000/score/share/${data.shareToken}`
+        }
       } catch {
-        // erreur siliencieuse
+        // erreur silencieuse
       }
     }
 
@@ -127,6 +133,11 @@ export default class Menu {
           <span class="af-lb-date">${s.date}</span>
         </div>
       `).join('')}
+      ${shareLink ? `
+        <a href="${shareLink}" target="_blank" class="af-share-btn">
+          🔗 PARTAGER MON SCORE →
+        </a>
+      ` : ''}
     `
   }
 
@@ -449,6 +460,26 @@ export default class Menu {
       .af-bottom-btn.red:hover {
         background: rgba(255,68,68,0.1);
       }
+
+      .af-share-btn {
+      display: block;
+      margin-top: 12px;
+      padding: 12px;
+      font-family: 'Bebas Neue', cursive;
+      font-size: 18px;
+      letter-spacing: 2px;
+      background: rgba(255,215,0,0.08);
+      color: #FFD700;
+      border: 2px solid #FFD700;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: all 0.15s;
+    }
+
+    .af-share-btn:hover {
+      background: rgba(255,215,0,0.18);
+    }
     `
     document.head.appendChild(style)
   }

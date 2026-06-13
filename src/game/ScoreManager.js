@@ -5,11 +5,21 @@ export default class ScoreManager {
     this.frameCount = 0
     this.startLevel = 1
     this.multiplier = 1
+    this.startTime = null
   }
 
   setStartLevel(level) {
     this.startLevel = level
     this.level = level
+  }
+
+  start() {
+    this.startTime = Date.now()
+  }
+
+  getDuration() {
+    if (!this.startTime) return 1
+    return Math.max(1, Math.floor((Date.now() - this.startTime) / 1000))
   }
 
   update() {
@@ -32,5 +42,6 @@ export default class ScoreManager {
     this.level = this.startLevel
     this.frameCount = 0
     this.multiplier = 1
+    this.startTime = Date.now()
   }
 }
