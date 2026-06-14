@@ -17,7 +17,7 @@ describe('Vroum Vroum - Tests E2E', () => {
 
   it('affiche le menu principal après connexion en invité', () => {
     cy.get('#guestBtn').click()
-    cy.get('.af-play-btn').should('exist')
+    cy.get('.m-play').should('exist')
   })
 
   it('peut sélectionner un niveau de difficulté', () => {
