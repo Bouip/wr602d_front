@@ -1,57 +1,35 @@
-# 🚕 Taxi Rush — Front
+# VROUM VROUM — Front
 
-Endless runner 3D développé avec Three.js + Vite dans le cadre du module WR602D.
+Endless runner 3D fait avec Three.js et Vite.
+
+## Démo
+
+[http://185.216.26.48](http://185.216.26.48)
+
+> Le jeu a besoin du back en local pour l'authentification et les scores.
 
 ## Installation
 
-### Prérequis
-- Node.js >= 20
-
-### Installation des dépendances
-
 ```bash
 npm install
-```
-
-### Lancer le projet
-
-```bash
 npx vite
 ```
 
-Ouvrir `http://localhost:5173` dans le navigateur.
+Puis ouvre [http://localhost:5173](http://localhost:5173).
 
-### Build pour la production
+## Commandes utiles
 
 ```bash
-npx vite build
+npm run build
+npm run lint
+npx cypress run
 ```
 
-## Dépendances
-
-- **Three.js** `^0.184.0` — moteur 3D
-- **Vite** `^8.0.12` — bundler
-
-## Jouer
+## Contrôles
 
 - **← →** : changer de voie
-- **Espace** : pause / reprendre
+- **Espace** : pause
 
-## Structure du projet
+## Stack
 
-```
-src/
-├── game/
-│   ├── Game.js          # Boucle principale
-│   ├── Scene.js         # Caméra, lumières, environnement
-│   ├── Player.js        # Le taxi
-│   ├── Road.js          # Route infinie
-│   ├── Obstacles.js     # Obstacles
-│   ├── Buildings.js     # Bâtiments
-│   ├── ScoreManager.js  # Gestion des scores et niveaux
-│   └── SoundManager.js  # Sound design
-└── ui/
-    ├── Auth.js           # Authentification
-    ├── HUD.js            # Interface en jeu
-    └── Menu.js           # Menus
-```
+- Three.js, Vite, Cypress, ESLint
