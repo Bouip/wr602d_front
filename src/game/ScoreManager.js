@@ -27,8 +27,9 @@ export default class ScoreManager {
     if (this.frameCount % 10 === 0) {
       this.score += this.multiplier
     }
-    if (this.score > 0 && this.score % 200 === 0) {
-      this.level = Math.min(3, Math.floor(this.score / 200) + this.startLevel)
+    const newLevel = Math.min(3, this.startLevel + Math.floor(this.score / 300))
+    if (newLevel > this.level) {
+      this.level = newLevel
     }
   }
 

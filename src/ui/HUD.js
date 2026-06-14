@@ -19,23 +19,23 @@ export default class HUD {
     this.container.id = 'hud'
     this.container.innerHTML = `
       <div id="hud-left">
-        <div id="hud-score-wrap">
-          <span class="hud-label">SCORE</span>
+        <div class="hud-score-block">
+          <span class="hud-label">Score</span>
           <span id="score">0</span>
         </div>
         <div id="username-display"></div>
       </div>
 
       <div id="hud-center">
-        <div id="hud-level-wrap">
-          <span class="hud-label">NIVEAU</span>
+        <div class="hud-level-block">
+          <span class="hud-label">Niveau</span>
           <span id="level">1</span>
         </div>
       </div>
 
       <div id="hud-right">
         <div id="hud-lives-wrap">
-          <span class="hud-label">VIES</span>
+          <span class="hud-label">Vies</span>
           <div id="lives">
             <svg class="life-icon" viewBox="0 0 24 24"><path d="M12 21.4L10.55 20.1C5.4 15.4 2 12.3 2 8.5C2 5.4 4.4 3 7.5 3C9.2 3 10.9 3.8 12 5C13.1 3.8 14.8 3 16.5 3C19.6 3 22 5.4 22 8.5C22 12.3 18.6 15.4 13.45 20.1L12 21.4Z"/></svg>
             <svg class="life-icon" viewBox="0 0 24 24"><path d="M12 21.4L10.55 20.1C5.4 15.4 2 12.3 2 8.5C2 5.4 4.4 3 7.5 3C9.2 3 10.9 3.8 12 5C13.1 3.8 14.8 3 16.5 3C19.6 3 22 5.4 22 8.5C22 12.3 18.6 15.4 13.45 20.1L12 21.4Z"/></svg>
@@ -74,6 +74,7 @@ export default class HUD {
           : 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.8-1-3.3-2.5-4v8c1.5-.7 2.5-2.2 2.5-4z'
       )
     })
+
     document.getElementById('pauseBtn').addEventListener('click', () => this.onPause())
     document.getElementById('restartBtn').addEventListener('click', () => this.onRestart())
     document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -87,11 +88,14 @@ export default class HUD {
     this.pauseOverlay.id = 'pause-overlay'
     this.pauseOverlay.innerHTML = `
       <div class="pause-card">
+        <span class="pause-eyebrow">Jeu en pause</span>
         <h2 class="pause-title">PAUSE</h2>
-        <button class="af-pause-btn primary" id="resumeBtn">REPRENDRE →</button>
-        <button class="af-pause-btn secondary" id="restartPauseBtn">RECOMMENCER</button>
-        <button class="af-pause-btn ghost" id="menuBtn">MENU PRINCIPAL</button>
-        <button class="af-pause-btn ghost" id="mutePauseBtn">${this.muteBtn.textContent === '🔇' ? '🔇 SON OFF' : '🔊 SON ON'}</button>
+        <div class="pause-actions">
+          <button class="pause-btn pause-btn--main" id="resumeBtn">Reprendre</button>
+          <button class="pause-btn pause-btn--secondary" id="restartPauseBtn">Recommencer</button>
+          <button class="pause-btn pause-btn--ghost" id="menuBtn">Menu principal</button>
+          <button class="pause-btn pause-btn--ghost" id="mutePauseBtn">Son ON</button>
+        </div>
       </div>
     `
     document.body.appendChild(this.pauseOverlay)
@@ -101,8 +105,7 @@ export default class HUD {
     document.getElementById('menuBtn').addEventListener('click', () => this.onMenu())
     document.getElementById('mutePauseBtn').addEventListener('click', () => {
       const muted = this.onMute()
-      this.muteBtn.textContent = muted ? '🔇' : '🔊'
-      document.getElementById('mutePauseBtn').textContent = muted ? '🔇 SON OFF' : '🔊 SON ON'
+      document.getElementById('mutePauseBtn').textContent = muted ? 'Son OFF' : 'Son ON'
     })
   }
 
@@ -115,28 +118,24 @@ export default class HUD {
 
   setUser(user) {
     const el = document.getElementById('username-display')
-    if (el) el.textContent = user ? `// ${user.username.toUpperCase()} //` : ''
+    if (el && user) {
+      el.innerHTML = `
+        <div class="hud-user-badge">
+          <div class="hud-user-dot"></div>
+          <span class="hud-user-name">${user.username}</span>
+        </div>
+      `
+    }
   }
 
   showPowerup(text, color) {
     this.hidePowerup()
     const el = document.createElement('div')
     el.id = 'powerup-notif'
-    el.textContent = text
-    el.style.cssText = `
-      position: fixed;
-      top: 90px;
-      left: 50%;
-      transform: translateX(-50%) skewX(-5deg);
-      font-family: 'Bebas Neue', cursive;
-      font-size: 36px;
-      letter-spacing: 3px;
-      color: ${color};
-      text-shadow: 3px 3px 0 #000;
-      z-index: 110;
-      animation: powerupAnim 0.3s ease;
-      border-left: 4px solid ${color};
-      padding-left: 12px;
+    el.innerHTML = `
+      <div class="powerup-inner" style="border-color:${color}">
+        <span class="powerup-text" style="color:${color}">${text}</span>
+      </div>
     `
     document.body.appendChild(el)
   }
@@ -149,14 +148,9 @@ export default class HUD {
   update(score, lives, level) {
     this.scoreEl.textContent = score
     this.levelEl.textContent = level
-
     const icons = document.querySelectorAll('.life-icon')
     icons.forEach((icon, i) => {
-      if (i < lives) {
-        icon.classList.remove('lost')
-      } else {
-        icon.classList.add('lost')
-      }
+      icon.classList.toggle('lost', i >= lives)
     })
   }
 
@@ -165,7 +159,6 @@ export default class HUD {
     const style = document.createElement('style')
     style.id = 'hud-style'
     style.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@700;900&display=swap');
 
       #hud {
         position: fixed;
@@ -178,20 +171,21 @@ export default class HUD {
         z-index: 100;
         pointer-events: none;
         box-sizing: border-box;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
+        background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 100%);
       }
 
       #hud-left {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 6px;
         align-items: flex-start;
       }
 
       #hud-center {
         display: flex;
+        flex-direction: column;
         justify-content: center;
-        align-items: flex-start;
+        align-items: center;
       }
 
       #hud-right {
@@ -202,45 +196,65 @@ export default class HUD {
       }
 
       .hud-label {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-weight: 900;
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
         font-size: 10px;
-        letter-spacing: 4px;
-        color: rgba(255,255,255,0.35);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.3);
         display: block;
       }
 
+      .hud-score-block, .hud-level-block {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .hud-level-block { align-items: center; }
+
       #score {
         font-family: 'Bebas Neue', cursive;
-        font-size: 52px;
-        color: #FFD700;
+        font-size: 54px;
+        color: var(--pink);
         letter-spacing: 3px;
         line-height: 1;
-        text-shadow: 3px 3px 0 rgba(0,0,0,0.8);
+        text-shadow: 0 0 20px rgba(255,77,141,0.4), 2px 2px 0 rgba(0,0,0,0.8);
       }
 
       #level {
         font-family: 'Bebas Neue', cursive;
-        font-size: 52px;
-        color: #00ff88;
+        font-size: 54px;
+        color: #fff;
         letter-spacing: 3px;
         line-height: 1;
-        text-shadow: 3px 3px 0 rgba(0,0,0,0.8);
+        text-shadow: 2px 2px 0 rgba(0,0,0,0.8);
       }
 
-      #hud-level-wrap {
+      .hud-user-badge {
         display: flex;
-        flex-direction: column;
         align-items: center;
+        gap: 6px;
+        background: rgba(255,77,141,0.12);
+        border: 1px solid rgba(255,77,141,0.25);
+        border-radius: 20px;
+        padding: 4px 10px 4px 8px;
       }
 
-      #username-display {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-weight: 700;
+      .hud-user-dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: var(--pink);
+        box-shadow: 0 0 6px rgba(255,77,141,0.8);
+        flex-shrink: 0;
+      }
+
+      .hud-user-name {
+        font-family: 'Inter', sans-serif;
         font-size: 12px;
-        letter-spacing: 2px;
-        color: rgba(255,255,255,0.25);
-        margin-top: 2px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.8);
+        letter-spacing: 1px;
       }
 
       #hud-lives-wrap {
@@ -250,142 +264,197 @@ export default class HUD {
         gap: 4px;
       }
 
-      #lives {
-        display: flex;
-        gap: 6px;
-        align-items: center;
+      #lives { 
+      display: flex; 
+      gap: 6px; 
+      align-items: center; 
       }
 
       .life-icon {
-        width: 28px;
-        height: 28px;
-        fill: #ff4444;
-        filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.8));
+        width: 26px; height: 26px;
+        fill: var(--pink);
+        filter: drop-shadow(0 0 4px rgba(255,77,141,0.5));
         transition: all 0.2s;
       }
 
-      .life-icon.lost {
-        fill: rgba(255,68,68,0.15);
+      .life-icon.lost { 
+      fill: rgba(255,77,141,0.12); 
+      filter: none; 
       }
 
-      #hud-btns {
-        display: flex;
-        gap: 6px;
-        pointer-events: all;
+      #hud-btns { 
+      display: flex; 
+      gap: 6px; 
+      pointer-events: all; 
       }
 
       .hud-btn {
         pointer-events: all;
-        background: rgba(0,0,0,0.5);
-        border: 1px solid rgba(255,255,255,0.12);
-        color: rgba(255,255,255,0.5);
-        width: 34px;
-        height: 34px;
-        border-radius: 2px;
+        background: rgba(0,0,0,0.4);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: rgba(255,255,255,0.35);
+        width: 34px; height: 34px;
+        border-radius: 8px;
         cursor: pointer;
         transition: all 0.15s;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 0;
+        backdrop-filter: blur(4px);
       }
 
       .hud-btn:hover {
-        border-color: #FFD700;
-        color: #FFD700;
-        background: rgba(255,215,0,0.1);
+        border-color: var(--pink);
+        color: var(--pink);
+        background: rgba(255,77,141,0.1);
       }
 
-      .hud-btn svg {
-        width: 16px;
-        height: 16px;
-        fill: currentColor;
+      .hud-btn svg { 
+      width: 16px; 
+      height: 16px; 
+      fill: currentColor;
+      }
+      .hud-btn.muted { 
+      border-color: rgba(255,77,141,0.3); 
+      color: rgba(255,77,141,0.3); 
       }
 
-      .hud-btn.muted {
-        border-color: #ff4444;
-        color: #ff4444;
+      #powerup-notif {
+        position: fixed;
+        top: 90px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 110;
+        animation: powerupAnim 0.3s ease;
+      }
+
+      .powerup-inner {
+        background: rgba(0,0,0,0.6);
+        border-left: 3px solid;
+        border-radius: 4px;
+        padding: 8px 20px;
+        backdrop-filter: blur(4px);
+      }
+
+      .powerup-text {
+        font-family: 'Bebas Neue', cursive;
+        font-size: 26px;
+        letter-spacing: 4px;
+        text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
+      }
+
+      @keyframes powerupAnim {
+        from { 
+        opacity: 0; 
+        transform: translateX(-50%) translateY(-10px); 
+        }
+        to { 
+        opacity: 1; 
+        transform: translateX(-50%) translateY(0); 
+        }
       }
 
       #pause-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.8);
+        background: rgba(0,0,0,0.7);
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 150;
+        backdrop-filter: blur(6px);
       }
 
       .pause-card {
-        background: #111;
-        border: 3px solid #FFD700;
-        border-radius: 2px;
-        padding: 40px 36px;
-        width: 300px;
+        background: #1a1a2e;
+        border: 2px solid rgba(255,77,141,0.25);
+        border-radius: 20px;
+        padding: 44px 40px;
+        width: 340px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
         align-items: center;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 60px rgba(255,77,141,0.08);
+      }
+
+      .pause-eyebrow {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--pink);
+        margin-bottom: 8px;
       }
 
       .pause-title {
         font-family: 'Bebas Neue', cursive;
-        font-size: 72px;
-        color: #FFD700;
-        letter-spacing: 8px;
-        text-shadow: 4px 4px 0 #000;
-        margin: 0 0 12px;
-        transform: skewX(-4deg);
-        display: block;
-      }
-
-      .af-pause-btn {
-        width: 100%;
-        padding: 14px;
-        font-family: 'Bebas Neue', cursive;
-        font-size: 22px;
-        letter-spacing: 3px;
-        border: none;
-        cursor: pointer;
-        border-radius: 2px;
-        transition: all 0.15s;
-      }
-
-      .af-pause-btn.primary {
-        background: #FFD700;
-        color: #000;
-      }
-
-      .af-pause-btn.primary:hover {
-        background: #ffe44d;
-        transform: translateY(-1px);
-      }
-
-      .af-pause-btn.secondary {
-        background: #222;
+        font-size: 80px;
         color: #fff;
-        border: 2px solid #444;
+        letter-spacing: 8px;
+        line-height: 1;
+        margin: 0 0 32px;
+        text-shadow: 0 0 40px rgba(255,77,141,0.25);
       }
 
-      .af-pause-btn.secondary:hover { border-color: #fff; }
+      .pause-actions {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
 
-      .af-pause-btn.ghost {
+      .pause-btn {
+        width: 100%;
+        padding: 15px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: 2px solid transparent;
+      }
+
+      .pause-btn--main {
+        background: var(--pink);
+        color: #fff;
+        border-color: var(--pink);
+        box-shadow: 0 4px 0 var(--pink-dark);
+      }
+
+      .pause-btn--main:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 0 var(--pink-dark);
+      }
+
+      .pause-btn--main:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 var(--pink-dark);
+      }
+
+      .pause-btn--secondary {
+        background: rgba(255,255,255,0.05);
+        color: rgba(255,255,255,0.7);
+        border-color: rgba(255,255,255,0.1);
+      }
+
+      .pause-btn--secondary:hover {
+        border-color: rgba(255,255,255,0.25);
+        color: #fff;
+      }
+
+      .pause-btn--ghost {
         background: transparent;
-        color: rgba(255,255,255,0.35);
-        border: 1px solid #333;
-        font-size: 16px;
-        letter-spacing: 2px;
+        color: rgba(255,255,255,0.3);
+        border-color: rgba(255,255,255,0.06);
+        font-size: 13px;
       }
 
-      .af-pause-btn.ghost:hover {
+      .pause-btn--ghost:hover {
         color: rgba(255,255,255,0.6);
-        border-color: #555;
-      }
-
-      @keyframes powerupAnim {
-        from { opacity: 0; transform: translateX(-50%) skewX(-5deg) translateY(-15px); }
-        to { opacity: 1; transform: translateX(-50%) skewX(-5deg) translateY(0); }
+        border-color: rgba(255,255,255,0.12);
       }
     `
     document.head.appendChild(style)

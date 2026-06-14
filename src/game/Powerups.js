@@ -4,10 +4,9 @@ const LANE_WIDTH = 3
 const LANES = [-LANE_WIDTH, 0, LANE_WIDTH]
 
 const POWERUP_TYPES = [
-  { name: 'shield', color: 0x00aaff, emissive: 0x0044ff, symbol: '🛡️' },
-  { name: 'life', color: 0xff0044, emissive: 0xff0000, symbol: '❤️' },
-  { name: 'boost', color: 0xffff00, emissive: 0xffaa00, symbol: '⚡' },
-  { name: 'slow', color: 0x00ff88, emissive: 0x00aa44, symbol: '🐌' },
+  { name: 'shield', color: 0x4d96ff, emissive: 0x2244ff },
+  { name: 'life', color: 0xff4d6d, emissive: 0xff0044 },
+  { name: 'slow', color: 0x6bcb77, emissive: 0x00aa44 },
 ]
 
 export default class Powerups {
@@ -20,34 +19,78 @@ export default class Powerups {
 
   init() {}
 
+  createShieldMesh() {
+    const group = new THREE.Group()
+    const mat = new THREE.MeshLambertMaterial({ color: 0x4d96ff, emissive: 0x2244ff, emissiveIntensity: 0.5 })
+    const whiteMat = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.8 })
+
+    const cube = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), mat)
+    group.add(cube)
+
+    const square = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.85), whiteMat)
+    group.add(square)
+
+    return group
+  }
+
+  createLifeMesh() {
+    const group = new THREE.Group()
+    const mat = new THREE.MeshLambertMaterial({ color: 0xff4d6d, emissive: 0xff0044, emissiveIntensity: 0.6 })
+    const whiteMat = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.9 })
+
+    const cube = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), mat)
+    group.add(cube)
+
+    const v = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.6, 0.85), whiteMat)
+    group.add(v)
+    const h = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.15, 0.85), whiteMat)
+    group.add(h)
+
+    return group
+  }
+
+  createSlowMesh() {
+    const group = new THREE.Group()
+    const mat = new THREE.MeshLambertMaterial({ color: 0x6bcb77, emissive: 0x00aa44, emissiveIntensity: 0.5 })
+    const whiteMat = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.8 })
+
+    const cube = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), mat)
+    group.add(cube)
+
+    for (let i = -1; i <= 1; i++) {
+      const line = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.1, 0.85), whiteMat)
+      line.position.y = i * 0.22
+      group.add(line)
+    }
+
+    return group
+  }
+
   spawn() {
     const type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)]
     const lane = Math.floor(Math.random() * 3)
 
-    const group = new THREE.Group()
+    let mesh
+    if (type.name === 'shield') mesh = this.createShieldMesh()
+    else if (type.name === 'life') mesh = this.createLifeMesh()
+    else mesh = this.createSlowMesh()
 
-    // sphère
-    const geo = new THREE.SphereGeometry(0.5, 16, 16)
-    const mat = new THREE.MeshLambertMaterial({
+    const haloGeo = new THREE.TorusGeometry(0.65, 0.05, 8, 24)
+    const haloMat = new THREE.MeshLambertMaterial({
       color: type.color,
       emissive: type.emissive,
-      emissiveIntensity: 0.5
+      emissiveIntensity: 1.0,
+      transparent: true,
+      opacity: 0.7
     })
-    const sphere = new THREE.Mesh(geo, mat)
-    group.add(sphere)
+    const halo = new THREE.Mesh(haloGeo, haloMat)
+    mesh.add(halo)
 
-    // anneau autour
-    const ringGeo = new THREE.TorusGeometry(0.7, 0.08, 8, 24)
-    const ringMat = new THREE.MeshLambertMaterial({ color: type.color })
-    const ring = new THREE.Mesh(ringGeo, ringMat)
-    ring.rotation.x = Math.PI / 2
-    group.add(ring)
+    mesh.position.set(LANES[lane], 1.2, -50)
+    mesh.userData = { type: type.name, lane }
 
-    group.position.set(LANES[lane], 1, -50)
-    group.userData = { type: type.name, lane }
-
-    this.scene.add(group)
-    this.powerups.push(group)
+    this.scene.add(mesh)
+    this.powerups.push(mesh)
   }
 
   update(speed) {
@@ -59,9 +102,8 @@ export default class Powerups {
 
     this.powerups.forEach(p => {
       p.position.z += speed
-      // effet rotation
       p.rotation.y += 0.05
-      p.children[1].rotation.z += 0.03
+      p.position.y = 1.2 + Math.sin(Date.now() * 0.003 + p.position.x) * 0.2
     })
 
     this.powerups = this.powerups.filter(p => {

@@ -27,7 +27,6 @@ export default class Obstacles {
   }
 
   init() {
-    // précharge tous les modèles
     OBSTACLE_CONFIGS.forEach(config => {
       this.loader.load(`/models/${config.file}`, (gltf) => {
         this.models[config.file] = { scene: gltf.scene, config }

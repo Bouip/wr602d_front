@@ -1,3 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --pink: #FF4D8D;
+  --pink-dark: #c0336b;
+  --dark: #1a1a2e;
+  --dark-deep: #0d0d18;
+  --yellow: #FFD93D;
+  --gray-bg: #f5f5f5;
+  --gray-border: #e8e8e8;
+  --gray-text: #bbb;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -7,6 +20,7 @@
 body {
   overflow: hidden;
   background: #000;
+  font-family: 'Inter', sans-serif;
 }
 
 canvas {

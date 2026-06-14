@@ -24,7 +24,6 @@ export default class Player {
     this.mesh = group
     this.scene.add(group)
 
-    // bouclier
     const shieldGeo = new THREE.SphereGeometry(1.8, 16, 16)
     const shieldMat = new THREE.MeshLambertMaterial({
       color: 0x00aaff,
@@ -38,7 +37,6 @@ export default class Player {
     this.shieldMesh.visible = false
     group.add(this.shieldMesh)
 
-    // le modèle GLB
     const loader = new GLTFLoader()
     loader.load('/models/kart-oopi.glb', (gltf) => {
       const model = gltf.scene

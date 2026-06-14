@@ -16,37 +16,54 @@ export default class Auth {
     this.container = document.createElement('div')
     this.container.id = 'auth'
     this.container.innerHTML = `
-      <div class="af-bg">
-        <button class="af-mute-floating" id="authMuteBtn">🔊</button>
-        <div class="af-header">
-          <div class="af-title-wrap">
-            <h1 class="af-title">VROUM</h1>
-            <h1 class="af-title accent">VROUM</h1>
-          </div>
-          <p class="af-tagline">// ENDLESS TAXI RUNNER //</p>
+      <div class="a-wrap">
+        <div class="a-left">
+          <span class="a-eyebrow">Commences une partie !!!!</span>
+          <h1 class="a-logo">
+            <span class="a-logo-solid">VROUM</span>
+            <span class="a-logo-outline">VROUM</span>
+          </h1>
         </div>
 
-        <div class="af-card">
-          <div class="af-tabs">
-            <button class="af-tab active" id="loginTab">CONNEXION</button>
-            <button class="af-tab" id="registerTab">INSCRIPTION</button>
-          </div>
+        <div class="a-right">
+          <div class="a-form-wrap">
+            <div class="a-tabs">
+              <button class="a-tab active" id="loginTab">Connexion</button>
+              <button class="a-tab" id="registerTab">Inscription</button>
+            </div>
 
-          <div id="loginForm" class="af-form">
-            <input class="af-input" type="email" id="loginEmail" placeholder="EMAIL" />
-            <input class="af-input" type="password" id="loginPassword" placeholder="MOT DE PASSE" />
-            <button class="af-btn green" id="loginBtn">SE CONNECTER →</button>
-            <button class="af-btn ghost" id="guestBtn">👻 JOUER EN INVITÉ</button>
-          </div>
+            <div id="loginForm" class="a-form">
+              <div class="a-field">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="ton@email.fr" />
+              </div>
+              <div class="a-field">
+                <label>Mot de passe</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" />
+              </div>
+              <button class="a-btn a-btn--main" id="loginBtn">Se connecter</button>
+              <button class="a-btn a-btn--ghost" id="guestBtn">Jouer en invité</button>
+            </div>
 
-          <div id="registerForm" class="af-form" style="display:none">
-            <input class="af-input" type="text" id="regUsername" placeholder="PSEUDO" />
-            <input class="af-input" type="email" id="regEmail" placeholder="EMAIL" />
-            <input class="af-input" type="password" id="regPassword" placeholder="MOT DE PASSE" />
-            <button class="af-btn green" id="registerBtn">CRÉER MON COMPTE →</button>
-          </div>
+            <div id="registerForm" class="a-form" style="display:none">
+              <div class="a-field">
+                <label>Pseudo</label>
+                <input type="text" id="regUsername" placeholder="MonPseudo" />
+              </div>
+              <div class="a-field">
+                <label>Email</label>
+                <input type="email" id="regEmail" placeholder="ton@email.fr" />
+              </div>
+              <div class="a-field">
+                <label>Mot de passe</label>
+                <input type="password" id="regPassword" placeholder="••••••••" />
+              </div>
+              <button class="a-btn a-btn--main" id="registerBtn">Créer mon compte</button>
+            </div>
 
-          <p id="authError" class="af-error"></p>
+            <p id="authError" class="a-error"></p>
+            <button class="a-mute" id="authMuteBtn">Son ON</button>
+          </div>
         </div>
       </div>
     `
@@ -56,7 +73,6 @@ export default class Auth {
   }
 
   bindEvents() {
-
     const startMenuMusic = () => {
       if (window.gameInstance) {
         window.gameInstance.soundManager.init()
@@ -81,18 +97,11 @@ export default class Auth {
     })
 
     document.getElementById('loginBtn').addEventListener('click', async () => {
-      await this.login(
-        document.getElementById('loginEmail').value,
-        document.getElementById('loginPassword').value
-      )
+      await this.login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value)
     })
 
     document.getElementById('registerBtn').addEventListener('click', async () => {
-      await this.register(
-        document.getElementById('regUsername').value,
-        document.getElementById('regEmail').value,
-        document.getElementById('regPassword').value
-      )
+      await this.register(document.getElementById('regUsername').value, document.getElementById('regEmail').value, document.getElementById('regPassword').value)
     })
 
     document.getElementById('guestBtn').addEventListener('click', () => {
@@ -104,14 +113,15 @@ export default class Auth {
     document.getElementById('authMuteBtn').addEventListener('click', () => {
       if (window.gameInstance) {
         const muted = window.gameInstance.soundManager.toggleMute()
-        document.getElementById('authMuteBtn').textContent = muted ? '🔇' : '🔊'
+        document.getElementById('authMuteBtn').textContent = muted ? 'Son OFF' : 'Son ON'
       }
     })
   }
 
   async login(email, password) {
     const btn = document.getElementById('loginBtn')
-    btn.textContent = '⏳ CONNEXION...'
+    btn.textContent = 'Connexion...'
+    btn.disabled = true
     try {
       const res = await fetch('http://localhost:8000/api/login_check', {
         method: 'POST',
@@ -127,18 +137,21 @@ export default class Auth {
         this.hide()
         this.onLogin(this.currentUser)
       } else {
-        this.showError('❌ EMAIL OU MOT DE PASSE INCORRECT')
-        btn.textContent = 'SE CONNECTER →'
+        this.showError('Email ou mot de passe incorrect')
+        btn.textContent = 'Se connecter'
+        btn.disabled = false
       }
     } catch {
-      this.showError('❌ SERVEUR INDISPONIBLE')
-      btn.textContent = 'SE CONNECTER →'
+      this.showError('Serveur indisponible')
+      btn.textContent = 'Se connecter'
+      btn.disabled = false
     }
   }
 
   async register(username, email, password) {
     const btn = document.getElementById('registerBtn')
-    btn.textContent = '⏳ CRÉATION...'
+    btn.textContent = 'Création...'
+    btn.disabled = true
     try {
       const res = await fetch('http://localhost:8000/api/user/register', {
         method: 'POST',
@@ -146,23 +159,25 @@ export default class Auth {
         body: JSON.stringify({ username, email, plainPassword: password })
       })
       if (res.ok) {
-        this.showError('✅ COMPTE CRÉÉ ! CONNECTE-TOI.')
+        this.showError('Compte créé ! Connecte-toi.', true)
         document.getElementById('loginTab').click()
       } else {
-        this.showError('❌ ERREUR LORS DE L\'INSCRIPTION')
-        btn.textContent = 'CRÉER MON COMPTE →'
+        this.showError('Erreur lors de l\'inscription')
+        btn.textContent = 'Créer mon compte'
+        btn.disabled = false
       }
     } catch {
-      this.showError('❌ SERVEUR INDISPONIBLE')
-      btn.textContent = 'CRÉER MON COMPTE →'
+      this.showError('Serveur indisponible')
+      btn.textContent = 'Créer mon compte'
+      btn.disabled = false
     }
   }
 
-  showError(msg) {
+  showError(msg, success = false) {
     const el = document.getElementById('authError')
     if (el) {
       el.textContent = msg
-      el.style.color = msg.startsWith('✅') ? '#00ff88' : '#ff4444'
+      el.style.color = success ? '#22c55e' : '#ef4444'
     }
   }
 
@@ -178,178 +193,235 @@ export default class Auth {
     const style = document.createElement('style')
     style.id = 'auth-style'
     style.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@700;900&display=swap');
 
-      #auth {
-        position: fixed;
-        inset: 0;
-        z-index: 300;
+      #auth { 
+      position: fixed; 
+      inset: 0; 
+      z-index: 300; 
+      font-family: 'Inter', sans-serif; 
       }
 
-      .af-bg {
-        width: 100%;
-        height: 100%;
-        background: #0d0d0d;
+      .a-wrap { 
+      width: 100%; 
+      height: 100%; 
+      display: flex; 
+      }
+
+      .a-left {
+        flex: 1;
+        background: var(--dark);
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: center;
-        gap: 20px;
-        background-image:
-          repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 41px),
-          repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 41px);
-      }
-
-      .af-header { text-align: center; }
-
-      .af-title-wrap {
+        padding: 60px 50px;
         position: relative;
-        display: inline-block;
-      }
-
-      .af-title {
-        font-family: 'Bebas Neue', cursive;
-        font-size: 90px;
-        line-height: 0.9;
-        color: #fff;
-        letter-spacing: 8px;
-        display: block;
-        transform: skewX(-5deg);
-      }
-
-      .af-title.accent {
-        color: #FFD700;
-        position: absolute;
-        top: 3px;
-        left: 3px;
-        z-index: -1;
-      }
-
-      .af-tagline {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 13px;
-        letter-spacing: 5px;
-        color: rgba(255,255,255,0.3);
-        margin-top: 8px;
-      }
-
-      .af-card {
-        background: #1a1a1a;
-        border: 3px solid #FFD700;
-        border-radius: 4px;
-        padding: 28px;
-        width: 360px;
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-
-      .af-tabs {
-        display: flex;
-        gap: 0;
-        border: 2px solid #333;
-        border-radius: 2px;
         overflow: hidden;
       }
 
-      .af-tab {
-        flex: 1;
-        padding: 10px;
-        font-family: 'Barlow Condensed', sans-serif;
-        font-weight: 900;
-        font-size: 14px;
-        letter-spacing: 2px;
-        background: transparent;
-        color: rgba(255,255,255,0.3);
-        border: none;
-        cursor: pointer;
-        transition: all 0.15s;
+      .a-left::before {
+        content: '';
+        position: absolute; inset: 0;
+        background:
+          radial-gradient(ellipse at 0% 0%, rgba(255,77,141,0.2) 0%, transparent 50%),
+          radial-gradient(ellipse at 100% 100%, rgba(255,217,61,0.08) 0%, transparent 50%);
+        pointer-events: none;
       }
 
-      .af-tab.active {
-        background: #FFD700;
-        color: #000;
+      .a-eyebrow {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--pink);
+        margin-bottom: 14px;
+        position: relative; z-index: 1;
       }
 
-      .af-form {
+      .a-logo {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        margin-bottom: 24px;
+        position: relative; z-index: 1;
       }
 
-      .af-input {
-        padding: 13px 15px;
-        font-family: 'Barlow Condensed', sans-serif;
+      .a-logo-solid {
+        font-family: 'Bebas Neue', cursive;
+        font-size: 110px;
+        line-height: 0.85;
+        color: var(--pink);
+        letter-spacing: 6px;
+        display: block;
+        text-shadow: 0 0 60px rgba(255,77,141,0.3);
+      }
+
+      .a-logo-outline {
+        font-family: 'Bebas Neue', cursive;
+        font-size: 110px;
+        line-height: 0.85;
+        color: transparent;
+        -webkit-text-stroke: 2px rgba(255,255,255,0.15);
+        letter-spacing: 6px;
+        display: block;
+      }
+
+      .a-right {
+        width: 420px;
+        background: var(--gray-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 50px 44px;
+        overflow-y: auto;
+      }
+
+      .a-form-wrap { 
+      width: 100%; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 20px; 
+      }
+
+      .a-tabs { 
+      display: flex; 
+      border-bottom: 2px solid #e5e5e5; 
+      }
+
+      .a-tab {
+        flex: 1;
+        padding: 12px;
         font-weight: 700;
-        font-size: 15px;
-        letter-spacing: 2px;
-        background: #111;
-        border: 2px solid #333;
-        color: #fff;
-        outline: none;
-        border-radius: 2px;
-        transition: border-color 0.15s;
+        font-size: 14px;
+        background: transparent;
+        color: var(--gray-text);
+        border: none;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: 'Inter', sans-serif;
       }
 
-      .af-input::placeholder { color: #444; }
+      .a-tab.active { 
+      color: var(--pink); 7
+      border-bottom-color: var(--pink); 
+      }
 
-      .af-input:focus { border-color: #FFD700; }
+      .a-form { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 14px; 
+      }
 
-      .af-btn {
-        padding: 14px;
-        font-family: 'Barlow Condensed', sans-serif;
-        font-weight: 900;
-        font-size: 16px;
-        letter-spacing: 2px;
-        border: none;
-        cursor: pointer;
-        border-radius: 2px;
+      .a-field { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 6px; 
+      }
+
+      .a-field label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .a-field input {
+        padding: 13px 14px;
+        font-size: 14px;
+        font-family: 'Inter', sans-serif;
+        background: #fff;
+        border: 2px solid var(--gray-border);
+        color: #111;
+        outline: none;
+        border-radius: 10px;
         transition: all 0.15s;
       }
 
-      .af-btn.green {
-        background: #FFD700;
-        color: #000;
+      .a-field input:focus {
+        border-color: var(--pink);
+        box-shadow: 0 0 0 3px rgba(255,77,141,0.1);
       }
 
-      .af-btn.green:hover {
-        background: #ffe44d;
-        transform: translateY(-1px);
+      .a-field input::placeholder { 
+      color: #ccc; 
       }
 
-      .af-btn.ghost {
-        background: transparent;
-        color: rgba(255,255,255,0.4);
-        border: 2px solid #333;
-        font-size: 14px;
-      }
-
-      .af-btn.ghost:hover {
-        border-color: #555;
-        color: rgba(255,255,255,0.7);
-      }
-
-      .af-error {
-        font-family: 'Barlow Condensed', sans-serif;
+      .a-btn {
+        padding: 15px;
         font-weight: 700;
+        font-size: 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.15s;
+        width: 100%;
+        border: 2px solid transparent;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .a-btn--main {
+        background: var(--pink);
+        color: #fff;
+        border-color: var(--pink);
+        box-shadow: 0 4px 0 var(--pink-dark);
+      }
+
+      .a-btn--main:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 0 var(--pink-dark);
+      }
+
+      .a-btn--main:active { 
+      transform: translateY(2px); 
+      box-shadow: 0 2px 0 var(--pink-dark); 
+      }
+      .a-btn--main:disabled { 
+      opacity: 0.6; 
+      transform: none; 
+      }
+
+      .a-btn--ghost {
+        background: transparent;
+        color: #aaa;
+        border-color: var(--gray-border);
         font-size: 13px;
-        letter-spacing: 1px;
+      }
+
+      .a-btn--ghost:hover { 
+      border-color: #ccc; 
+      color: #666; 
+      }
+
+      .a-error {
+        font-size: 13px;
+        font-weight: 600;
         min-height: 18px;
         text-align: center;
       }
 
-      .af-mute-floating {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: rgba(0,0,0,0.5);
-        border: 2px solid #FFD700;
-        color: #FFD700;
-        font-size: 20px;
-        width: 42px;
-        height: 42px;
-        border-radius: 2px;
+      .a-mute {
+        font-weight: 600;
+        font-size: 12px;
+        background: transparent;
+        border: 1.5px solid var(--gray-border);
+        color: var(--gray-text);
+        padding: 9px;
+        border-radius: 8px;
         cursor: pointer;
+        transition: all 0.15s;
+        width: 100%;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .a-mute:hover { 
+      border-color: var(--pink); 
+      color: var(--pink); 
+      }
+
+      @media (max-width: 768px) {
+        .a-left { display: none; }
+        .a-right { width: 100%; }
       }
     `
     document.head.appendChild(style)

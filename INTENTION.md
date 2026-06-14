@@ -1,25 +1,22 @@
-# 🚕 Taxi Rush — Note d'intention
+# VROUM VROUM — Note d'intention
 
 ## But du jeu
 
-Taxi Rush est un jeu de type endless runner en 3D développé avec Three.js.
-Le joueur incarne un taxi jaune new-yorkais qui doit naviguer à toute vitesse
-dans les rues de la ville en évitant les obstacles (cyclistes, camions, piétons).
-Plus le joueur avance, plus la vitesse augmente et les obstacles se multiplient.
+VROUM VROUM est un jeu de type endless runner en 3D développé avec Three.js.
+Le joueur incarne un petit kart qui doit conduire dans les rues de la ville en évitant les obstacles (
+cartons, camions etc).
+Plus le joueur avance, plus la vitesse augmente et la difficulté aussi.
 
 ## Choix de game design
 
 ### Système de déplacement
-Le taxi se déplace sur 3 voies (gauche, centre, droite) avec les touches fléchées.
-Ce système simple et intuitif permet une prise en main immédiate tout en offrant
-des situations de jeu variées.
+Le kart se déplace sur 3 voies (gauche, centre, droite) avec les touches fléchées.
 
-### Économie principale — Score
+### Score
 Le score augmente automatiquement avec la distance parcourue.
-Il récompense la survie et l'endurance du joueur.
 
-### Économie secondaire — Vies
-Le joueur dispose de 3 vies. Chaque collision avec un obstacle lui en coûte une.
+### Vies
+Le joueur possède de 3 vies. Chaque collision avec un obstacle lui en coûte une.
 Une période d'invincibilité de 2 secondes suit chaque collision pour éviter
 les pertes en chaîne.
 
@@ -29,16 +26,15 @@ les pertes en chaîne.
 - **Niveau 2** : vitesse accrue, obstacles plus fréquents
 - **Niveau 3** : vitesse maximale, pour les joueurs expérimentés
 
-### Condition de défaite
+### Game Over
 La partie se termine quand le joueur perd ses 3 vies.
-Son score est alors enregistré dans le tableau des meilleurs scores.
+Son score est enregistré dans le tableau de scores et il peut voir les meilleurs scores.
 
 ## Références artistiques
 
-L'esthétique s'inspire de **Jet Set Radio** (Sega, 2000) :
-- Couleurs vives et contrastées
-- Ambiance urbaine dynamique
-- Bâtiments colorés générés procéduralement
+Je me suis inspirée de **Subway Surfers** pour le principe des 3 voies et la progression de vitesse.
+
+Pour la DA, j'ai choisi une palette avec du rose, du noir et un peu de jaune et des assets 3D **Kenney** pour garder un style cartoon.
 
 ## Stack technique
 

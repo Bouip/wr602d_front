@@ -31,6 +31,7 @@ export default class Game {
     this.boostActive = false
     this.slowActive = false
     this.speedLines = null
+    this.animationId = null
 
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' && this.isRunning) {
@@ -57,12 +58,17 @@ export default class Game {
   }
 
   start(level = 1) {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId)
+      this.animationId = null
+    }
+
     if (this.road) this.road.segments.forEach(s => this.scene.scene.remove(s))
     if (this.player && this.player.mesh) this.scene.scene.remove(this.player.mesh)
     if (this.obstacles) this.obstacles.getObstacles().forEach(o => this.scene.scene.remove(o))
-    if (this.buildings) this.buildings.buildings.forEach(b => this.scene.scene.remove(b))
+    if (this.buildings) this.buildings.buildings.forEach(b => this.scene.scene.remove(b.mesh || b))
     if (this.powerups) this.powerups.getPowerups().forEach(p => this.scene.scene.remove(p))
-      if (this.speedLines) this.scene.scene.remove(this.speedLines.group)
+    if (this.speedLines) this.scene.scene.remove(this.speedLines.group)
 
     this.road = new Road(this.scene.scene)
     this.road.init()
@@ -97,6 +103,10 @@ export default class Game {
     this.hud.hidePause()
     this.isPaused = false
     this.isRunning = false
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId)
+      this.animationId = null
+    }
     this.soundManager.stopBGM()
     this.start(this.scoreManager.startLevel)
   }
@@ -104,6 +114,10 @@ export default class Game {
   goToMenu() {
     this.isRunning = false
     this.isPaused = false
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId)
+      this.animationId = null
+    }
     this.hud.hidePause()
     this.soundManager.stopBGM()
     this.soundManager.playMenuMusic()
@@ -130,7 +144,7 @@ export default class Game {
     this.shieldActive = true
     this.player.isInvincible = true
     this.player.showShield(true)
-    this.hud.showPowerup('🛡️ BOUCLIER', '#00aaff')
+    this.hud.showPowerup('BOUCLIER', '#4d96ff')
     setTimeout(() => {
       this.shieldActive = false
       this.player.isInvincible = false
@@ -139,20 +153,9 @@ export default class Game {
     }, 10000)
   }
 
-  activateBoost() {
-    this.boostActive = true
-    this.scoreManager.multiplier = 2
-    this.hud.showPowerup('⚡ BOOST x2', '#ffff00')
-    setTimeout(() => {
-      this.boostActive = false
-      this.scoreManager.multiplier = 1
-      this.hud.hidePowerup()
-    }, 5000)
-  }
-
   activateSlow() {
     this.slowActive = true
-    this.hud.showPowerup('🐌 SLOW', '#00ff88')
+    this.hud.showPowerup('RALENTISSEMENT', '#6bcb77')
     setTimeout(() => {
       this.slowActive = false
       this.hud.hidePowerup()
@@ -174,10 +177,9 @@ export default class Game {
         if (type === 'shield') this.activateShield()
         else if (type === 'life') {
           this.player.lives = Math.min(3, this.player.lives + 1)
-          this.hud.showPowerup('❤️ +1 VIE', '#ff0044')
+          this.hud.showPowerup('+1 VIE', '#ff4d6d')
           setTimeout(() => this.hud.hidePowerup(), 2000)
         }
-        else if (type === 'boost') this.activateBoost()
         else if (type === 'slow') this.activateSlow()
 
         this.hud.update(this.scoreManager.score, this.player.lives, this.scoreManager.level)
@@ -206,10 +208,15 @@ export default class Game {
         if (this.player.lives <= 0) {
           this.isRunning = false
           this.isGameOver = true
-          this.soundManager.stopBGM()
+          if (this.animationId) {
+            cancelAnimationFrame(this.animationId)
+            this.animationId = null
+          }
           this.soundManager.stopBGM()
           this.soundManager.playGameOverMusic()
-          this.menu.showGameOver(this.scoreManager.score, this.currentUser)
+          setTimeout(() => {
+            this.menu.showGameOver(this.scoreManager.score, this.currentUser)
+          }, 500)
         }
 
         this.hud.update(this.scoreManager.score, this.player.lives, this.scoreManager.level)
@@ -225,7 +232,7 @@ export default class Game {
   animate() {
     if (!this.isRunning || this.isPaused) return
 
-    requestAnimationFrame(() => this.animate())
+    this.animationId = requestAnimationFrame(() => this.animate())
 
     const speedMultiplier = this.slowActive ? 0.5 : 1
     const speed = this.scoreManager.getSpeed() * speedMultiplier
@@ -240,7 +247,6 @@ export default class Game {
     this.checkPowerups()
     this.speedLines.update(speed)
 
-    // clignotement taxi si invincible
     if (this.player.isInvincible) {
       this.player.mesh.visible = Math.floor(Date.now() / 150) % 2 === 0
     } else {
